@@ -1,0 +1,991 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>CRP - Metal Xpert SRL</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+  html, body { height: 100%; }
+  body {
+    font-family: 'Segoe UI', -apple-system, BlinkMacSystemFont, Roboto, Helvetica, Arial, sans-serif;
+    background: #f0f2f5;
+    color: #344767;
+    font-size: 14px;
+    overflow-x: hidden;
+  }
+  /* ---- LOGIN ---- */
+  #login {
+    position: fixed; inset: 0;
+    background: linear-gradient(135deg, #1e3a5f 0%, #344767 100%);
+    display: flex; align-items: center; justify-content: center;
+    z-index: 100;
+  }
+  .login-card {
+    background: #fff;
+    border-radius: 16px;
+    padding: 40px 36px;
+    width: 360px;
+    box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+    text-align: center;
+  }
+  .login-logo {
+    width: 64px; height: 64px;
+    background: linear-gradient(135deg, #cb0c9f, #7928ca);
+    border-radius: 12px;
+    margin: 0 auto 16px;
+    display: flex; align-items: center; justify-content: center;
+    color: #fff; font-weight: 700; font-size: 22px;
+  }
+  .login-card h1 { font-size: 22px; margin-bottom: 4px; }
+  .login-card .sub { color: #67748e; font-size: 13px; margin-bottom: 24px; }
+  .login-card label { display: block; text-align: left; font-size: 12px; font-weight: 600; margin: 12px 0 6px; color: #344767; }
+  .login-card input {
+    width: 100%;
+    padding: 10px 12px;
+    border: 1px solid #d2d6da;
+    border-radius: 8px;
+    font-size: 14px;
+    outline: none;
+  }
+  .login-card input:focus { border-color: #cb0c9f; }
+  .login-card button {
+    width: 100%;
+    margin-top: 20px;
+    padding: 12px;
+    background: linear-gradient(310deg, #7928ca, #ff0080);
+    color: #fff;
+    border: none;
+    border-radius: 8px;
+    font-weight: 600;
+    cursor: pointer;
+    font-size: 14px;
+  }
+  .login-hint { margin-top: 14px; font-size: 11px; color: #67748e; }
+
+  /* ---- LAYOUT ---- */
+  #app { display: none; min-height: 100vh; }
+  #app.active { display: flex; }
+  .sidebar {
+    width: 250px;
+    background: #fff;
+    border-radius: 16px;
+    margin: 16px 0 16px 16px;
+    padding: 20px 16px;
+    box-shadow: 0 0 20px rgba(0,0,0,0.05);
+    flex-shrink: 0;
+    position: sticky; top: 16px;
+    align-self: flex-start;
+    height: calc(100vh - 32px);
+    overflow-y: auto;
+  }
+  .brand {
+    display: flex; align-items: center; gap: 10px;
+    padding-bottom: 16px; border-bottom: 1px solid #e9ecef;
+    margin-bottom: 16px;
+  }
+  .brand-logo {
+    width: 36px; height: 36px;
+    background: linear-gradient(135deg, #cb0c9f, #7928ca);
+    border-radius: 8px;
+    display: flex; align-items: center; justify-content: center;
+    color: #fff; font-weight: 700; font-size: 14px;
+  }
+  .brand-name { font-weight: 700; font-size: 15px; }
+  .brand-sub { font-size: 11px; color: #67748e; }
+  .nav-section { font-size: 10px; text-transform: uppercase; color: #67748e; padding: 14px 12px 6px; font-weight: 700; letter-spacing: 0.5px; }
+  .nav-item {
+    display: flex; align-items: center; gap: 10px;
+    padding: 10px 12px;
+    border-radius: 8px;
+    margin-bottom: 2px;
+    cursor: pointer;
+    color: #67748e;
+    font-weight: 500;
+    transition: all 0.15s;
+  }
+  .nav-item:hover { background: #f6f7f9; color: #344767; }
+  .nav-item.active {
+    background: #fff;
+    color: #344767;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+    font-weight: 600;
+  }
+  .nav-item.active .nav-icon { background: linear-gradient(310deg, #7928ca, #ff0080); color: #fff; }
+  .nav-icon {
+    width: 30px; height: 30px;
+    background: #f6f7f9;
+    border-radius: 8px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 14px;
+    flex-shrink: 0;
+  }
+  .main { flex: 1; padding: 16px 24px; min-width: 0; }
+  .topbar {
+    display: flex; justify-content: space-between; align-items: center;
+    margin-bottom: 20px;
+  }
+  .breadcrumb { font-size: 12px; color: #67748e; }
+  .breadcrumb b { color: #344767; }
+  .topbar-right { display: flex; gap: 12px; align-items: center; }
+  .topbar-icon {
+    width: 36px; height: 36px;
+    background: #fff;
+    border-radius: 8px;
+    display: flex; align-items: center; justify-content: center;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.05);
+    cursor: pointer;
+  }
+  .user-chip {
+    display: flex; align-items: center; gap: 8px;
+    background: #fff;
+    padding: 6px 12px 6px 6px;
+    border-radius: 20px;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.05);
+    cursor: pointer;
+    font-size: 13px; font-weight: 500;
+  }
+  .avatar {
+    width: 28px; height: 28px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #7928ca, #ff0080);
+    color: #fff;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 11px; font-weight: 700;
+  }
+
+  /* ---- CARDS / KPIs ---- */
+  .grid { display: grid; gap: 16px; }
+  .grid-4 { grid-template-columns: repeat(4, 1fr); }
+  .grid-3 { grid-template-columns: repeat(3, 1fr); }
+  .grid-2 { grid-template-columns: repeat(2, 1fr); }
+  @media (max-width: 1100px) { .grid-4 { grid-template-columns: repeat(2, 1fr); } .grid-3 { grid-template-columns: 1fr 1fr; } }
+  @media (max-width: 700px) {
+    .sidebar { display: none; }
+    #app.active { flex-direction: column; }
+    .main { padding: 12px; }
+    .grid-4, .grid-3, .grid-2 { grid-template-columns: 1fr; }
+    .login-card { width: 92%; }
+  }
+  .card {
+    background: #fff;
+    border-radius: 12px;
+    padding: 18px 20px;
+    box-shadow: 0 2px 12px rgba(0,0,0,0.04);
+  }
+  .kpi-label { font-size: 11px; color: #67748e; text-transform: uppercase; font-weight: 700; letter-spacing: 0.4px; }
+  .kpi-value { font-size: 22px; font-weight: 700; margin-top: 4px; }
+  .kpi-trend { font-size: 12px; margin-top: 6px; }
+  .kpi-trend.up { color: #82d616; }
+  .kpi-trend.down { color: #ea0606; }
+  .kpi-row { display: flex; justify-content: space-between; align-items: center; }
+  .kpi-icon {
+    width: 44px; height: 44px;
+    border-radius: 10px;
+    display: flex; align-items: center; justify-content: center;
+    color: #fff; font-size: 18px;
+  }
+  .ic-blue { background: linear-gradient(310deg, #2152ff, #21d4fd); }
+  .ic-pink { background: linear-gradient(310deg, #cb0c9f, #ff667c); }
+  .ic-green { background: linear-gradient(310deg, #17ad37, #98ec2d); }
+  .ic-orange { background: linear-gradient(310deg, #f53939, #fbcf33); }
+
+  h2.section-title { font-size: 16px; margin-bottom: 12px; }
+  h3.card-title { font-size: 15px; margin-bottom: 14px; }
+
+  /* ---- TABLES ---- */
+  table { width: 100%; border-collapse: collapse; }
+  th {
+    text-align: left;
+    font-size: 10px;
+    text-transform: uppercase;
+    color: #8392ab;
+    font-weight: 700;
+    letter-spacing: 0.5px;
+    padding: 10px 12px;
+    border-bottom: 1px solid #e9ecef;
+  }
+  td { padding: 12px; border-bottom: 1px solid #f1f2f4; font-size: 13px; vertical-align: middle; }
+  tr:last-child td { border-bottom: none; }
+  .badge {
+    display: inline-block;
+    padding: 3px 10px;
+    border-radius: 12px;
+    font-size: 10px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.4px;
+  }
+  .b-green { background: #ceedd0; color: #17ad37; }
+  .b-blue { background: #cde6ff; color: #2152ff; }
+  .b-yellow { background: #fff3bf; color: #b8860b; }
+  .b-red { background: #ffd5d5; color: #ea0606; }
+  .b-grey { background: #e9ecef; color: #67748e; }
+
+  /* ---- BUTTONS ---- */
+  .btn {
+    padding: 8px 16px;
+    border: none;
+    border-radius: 8px;
+    font-size: 12px;
+    font-weight: 600;
+    cursor: pointer;
+    text-transform: uppercase;
+    letter-spacing: 0.4px;
+  }
+  .btn-primary { background: linear-gradient(310deg, #7928ca, #ff0080); color: #fff; }
+  .btn-light { background: #f0f2f5; color: #344767; }
+  .btn-sm { padding: 5px 10px; font-size: 10px; }
+
+  /* ---- PAGES ---- */
+  .page { display: none; }
+  .page.active { display: block; }
+
+  /* ---- KANBAN ---- */
+  .kanban { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; }
+  @media (max-width: 1000px) { .kanban { grid-template-columns: 1fr 1fr; } }
+  @media (max-width: 600px) { .kanban { grid-template-columns: 1fr; } }
+  .kanban-col {
+    background: #f6f7f9;
+    border-radius: 12px;
+    padding: 12px;
+    min-height: 300px;
+  }
+  .kanban-col h4 {
+    font-size: 12px; text-transform: uppercase; letter-spacing: 0.4px;
+    margin-bottom: 12px; color: #67748e;
+    display: flex; justify-content: space-between;
+  }
+  .kanban-card {
+    background: #fff;
+    border-radius: 8px;
+    padding: 10px 12px;
+    margin-bottom: 8px;
+    box-shadow: 0 1px 4px rgba(0,0,0,0.05);
+    cursor: pointer;
+    border-left: 3px solid #2152ff;
+  }
+  .kanban-card.urgent { border-left-color: #ea0606; }
+  .kanban-card.review { border-left-color: #f5a623; }
+  .kanban-card.done { border-left-color: #17ad37; }
+  .kc-title { font-weight: 600; font-size: 13px; margin-bottom: 4px; }
+  .kc-meta { font-size: 11px; color: #67748e; display: flex; justify-content: space-between; margin-top: 6px; }
+
+  /* ---- BAR CHART (CSS only) ---- */
+  .chart {
+    display: flex;
+    align-items: flex-end;
+    height: 200px;
+    gap: 14px;
+    padding: 10px 0;
+    border-bottom: 1px solid #e9ecef;
+  }
+  .bar { flex: 1; background: linear-gradient(to top, #cb0c9f, #ff667c); border-radius: 6px 6px 0 0; position: relative; transition: opacity 0.2s; }
+  .bar:hover { opacity: 0.85; }
+  .bar::after {
+    content: attr(data-label);
+    position: absolute;
+    bottom: -22px;
+    left: 0; right: 0;
+    text-align: center;
+    font-size: 10px;
+    color: #67748e;
+  }
+  .bar::before {
+    content: attr(data-value);
+    position: absolute;
+    top: -18px;
+    left: 0; right: 0;
+    text-align: center;
+    font-size: 10px;
+    color: #344767;
+    font-weight: 600;
+  }
+  .chart-wrap { padding-bottom: 24px; }
+
+  /* ---- INVENTORY GRID ---- */
+  .heat-tag {
+    display: inline-block;
+    padding: 2px 8px;
+    background: #f0f2f5;
+    border-radius: 4px;
+    font-family: 'Consolas', monospace;
+    font-size: 11px;
+    color: #344767;
+  }
+  .progress {
+    height: 6px;
+    background: #e9ecef;
+    border-radius: 3px;
+    overflow: hidden;
+    width: 100px;
+  }
+  .progress-fill { height: 100%; background: linear-gradient(90deg, #2152ff, #21d4fd); border-radius: 3px; }
+  .progress-fill.low { background: linear-gradient(90deg, #f53939, #fbcf33); }
+
+  /* ---- SHOP FLOOR TABLET MODE ---- */
+  #shop-tablet {
+    position: fixed;
+    inset: 0;
+    background: #1e3a5f;
+    z-index: 99;
+    display: none;
+    flex-direction: column;
+    color: #fff;
+    padding: 20px;
+  }
+  #shop-tablet.active { display: flex; }
+  .tablet-header {
+    display: flex; justify-content: space-between; align-items: center;
+    padding-bottom: 16px;
+    border-bottom: 1px solid rgba(255,255,255,0.15);
+  }
+  .tablet-header h2 { font-size: 18px; }
+  .pin-pad {
+    margin: 60px auto 0;
+    text-align: center;
+  }
+  .pin-display {
+    background: rgba(255,255,255,0.1);
+    border-radius: 12px;
+    padding: 18px;
+    font-size: 28px;
+    letter-spacing: 14px;
+    margin: 24px auto;
+    width: 240px;
+    text-align: center;
+    font-family: 'Consolas', monospace;
+  }
+  .pin-grid { display: grid; grid-template-columns: repeat(3, 80px); gap: 14px; justify-content: center; }
+  .pin-btn {
+    background: rgba(255,255,255,0.1);
+    border: none;
+    color: #fff;
+    width: 80px; height: 80px;
+    border-radius: 50%;
+    font-size: 28px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background 0.15s;
+  }
+  .pin-btn:active, .pin-btn:hover { background: rgba(255,255,255,0.25); }
+  .tablet-tasks { padding: 20px 0; display: none; }
+  .tablet-tasks.active { display: block; }
+  .task-tile {
+    background: rgba(255,255,255,0.08);
+    border-radius: 12px;
+    padding: 16px;
+    margin-bottom: 12px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+  .task-tile .info h3 { font-size: 16px; margin-bottom: 4px; }
+  .task-tile .info p { font-size: 12px; opacity: 0.7; }
+  .task-actions { display: flex; gap: 8px; }
+  .task-btn {
+    padding: 10px 18px;
+    border-radius: 8px;
+    border: none;
+    font-weight: 600;
+    font-size: 13px;
+    cursor: pointer;
+  }
+  .task-btn.start { background: #2152ff; color: #fff; }
+  .task-btn.complete { background: #17ad37; color: #fff; }
+  .task-btn.pause { background: rgba(255,255,255,0.15); color: #fff; }
+
+  /* ---- MODAL ---- */
+  .modal-bg {
+    position: fixed; inset: 0;
+    background: rgba(0,0,0,0.5);
+    z-index: 200;
+    display: none;
+    align-items: center; justify-content: center;
+    padding: 20px;
+  }
+  .modal-bg.active { display: flex; }
+  .modal {
+    background: #fff;
+    border-radius: 12px;
+    padding: 24px;
+    max-width: 480px;
+    width: 100%;
+    max-height: 90vh;
+    overflow-y: auto;
+  }
+  .modal h3 { margin-bottom: 12px; }
+  .modal p { font-size: 13px; color: #67748e; margin-bottom: 6px; }
+  .modal label { display: block; font-size: 12px; font-weight: 600; margin: 10px 0 4px; }
+  .modal input, .modal select, .modal textarea {
+    width: 100%; padding: 8px 10px;
+    border: 1px solid #d2d6da; border-radius: 6px;
+    font-size: 13px; outline: none;
+  }
+  .modal-actions { display: flex; gap: 8px; justify-content: flex-end; margin-top: 18px; }
+  .toast {
+    position: fixed;
+    bottom: 24px;
+    right: 24px;
+    background: #344767;
+    color: #fff;
+    padding: 12px 20px;
+    border-radius: 8px;
+    font-size: 13px;
+    z-index: 300;
+    opacity: 0;
+    transition: opacity 0.3s;
+    box-shadow: 0 6px 20px rgba(0,0,0,0.2);
+  }
+  .toast.show { opacity: 1; }
+
+  .demo-banner {
+    background: linear-gradient(310deg, #f5a623, #ff667c);
+    color: #fff;
+    text-align: center;
+    padding: 6px;
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0.4px;
+  }
+</style>
+</head>
+<body>
+
+<div class="demo-banner">PROTOTYPE / DEMO MODE — Offline static preview of CRP for Metal Xpert SRL</div>
+
+<!-- ============== LOGIN ============== -->
+<div id="login">
+  <div class="login-card">
+    <div class="login-logo">CRP</div>
+    <h1>Metal Xpert SRL</h1>
+    <p class="sub">Steel Fabrication Management</p>
+    <label>Email</label>
+    <input id="login-email" value="vlad@metalxpert.ro">
+    <label>Password</label>
+    <input id="login-password" type="password" value="demo">
+    <button onclick="doLogin()">Sign in</button>
+    <p class="login-hint">Demo mode — any credentials will work</p>
+  </div>
+</div>
+
+<!-- ============== APP ============== -->
+<div id="app">
+  <aside class="sidebar">
+    <div class="brand">
+      <div class="brand-logo">CRP</div>
+      <div>
+        <div class="brand-name">Metal Xpert</div>
+        <div class="brand-sub">Zalău, RO</div>
+      </div>
+    </div>
+    <div class="nav-section">Operations</div>
+    <div class="nav-item active" onclick="goto('dashboard')"><div class="nav-icon">📊</div>Dashboard</div>
+    <div class="nav-item" onclick="goto('customers')"><div class="nav-icon">👥</div>Customers & Projects</div>
+    <div class="nav-item" onclick="goto('inventory')"><div class="nav-icon">📦</div>Steel Inventory</div>
+    <div class="nav-item" onclick="goto('workorders')"><div class="nav-icon">🔧</div>Work Orders</div>
+    <div class="nav-section">Production</div>
+    <div class="nav-item" onclick="openTablet()"><div class="nav-icon">📱</div>Shop Floor Tablet</div>
+    <div class="nav-section">Account</div>
+    <div class="nav-item" onclick="goto('settings')"><div class="nav-icon">⚙️</div>Settings</div>
+    <div class="nav-item" onclick="logout()"><div class="nav-icon">🚪</div>Sign Out</div>
+  </aside>
+
+  <main class="main">
+    <div class="topbar">
+      <div class="breadcrumb">Pages / <b id="page-title">Dashboard</b></div>
+      <div class="topbar-right">
+        <div class="topbar-icon" title="Search">🔍</div>
+        <div class="topbar-icon" title="Notifications">🔔</div>
+        <div class="user-chip">
+          <div class="avatar">VG</div>
+          <span>Vlad G.</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- ============== DASHBOARD ============== -->
+    <div class="page active" id="page-dashboard">
+      <div class="grid grid-4" style="margin-bottom: 16px;">
+        <div class="card">
+          <div class="kpi-row">
+            <div>
+              <div class="kpi-label">Active Projects</div>
+              <div class="kpi-value">12</div>
+              <div class="kpi-trend up">+2 this week</div>
+            </div>
+            <div class="kpi-icon ic-blue">📋</div>
+          </div>
+        </div>
+        <div class="card">
+          <div class="kpi-row">
+            <div>
+              <div class="kpi-label">Open Work Orders</div>
+              <div class="kpi-value">28</div>
+              <div class="kpi-trend down">3 overdue</div>
+            </div>
+            <div class="kpi-icon ic-pink">🔧</div>
+          </div>
+        </div>
+        <div class="card">
+          <div class="kpi-row">
+            <div>
+              <div class="kpi-label">Steel in Stock</div>
+              <div class="kpi-value">47.2 t</div>
+              <div class="kpi-trend up">+5.8 t this mo.</div>
+            </div>
+            <div class="kpi-icon ic-green">📦</div>
+          </div>
+        </div>
+        <div class="card">
+          <div class="kpi-row">
+            <div>
+              <div class="kpi-label">On-Floor Today</div>
+              <div class="kpi-value">8 / 10</div>
+              <div class="kpi-trend up">2 absent</div>
+            </div>
+            <div class="kpi-icon ic-orange">👷</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="grid grid-2" style="margin-bottom: 16px;">
+        <div class="card">
+          <h3 class="card-title">Production Output (tons / week)</h3>
+          <div class="chart-wrap">
+            <div class="chart">
+              <div class="bar" style="height: 35%;" data-label="W14" data-value="6.1"></div>
+              <div class="bar" style="height: 60%;" data-label="W15" data-value="9.4"></div>
+              <div class="bar" style="height: 50%;" data-label="W16" data-value="8.0"></div>
+              <div class="bar" style="height: 75%;" data-label="W17" data-value="11.6"></div>
+              <div class="bar" style="height: 65%;" data-label="W18" data-value="10.2"></div>
+              <div class="bar" style="height: 90%;" data-label="W19" data-value="13.8"></div>
+              <div class="bar" style="height: 80%;" data-label="W20" data-value="12.5"></div>
+            </div>
+          </div>
+        </div>
+        <div class="card">
+          <h3 class="card-title">Recent Activity</h3>
+          <div style="font-size: 13px;">
+            <div style="display: flex; gap: 12px; padding: 8px 0; border-bottom: 1px solid #f1f2f4;">
+              <div style="width: 32px; height: 32px; background: #ceedd0; border-radius: 8px; display: flex; align-items: center; justify-content: center;">✓</div>
+              <div>
+                <div><b>WO-2026-118</b> completed by Marian P.</div>
+                <div style="font-size: 11px; color: #67748e;">2 hours ago — Hala Industriala project</div>
+              </div>
+            </div>
+            <div style="display: flex; gap: 12px; padding: 8px 0; border-bottom: 1px solid #f1f2f4;">
+              <div style="width: 32px; height: 32px; background: #cde6ff; border-radius: 8px; display: flex; align-items: center; justify-content: center;">📦</div>
+              <div>
+                <div>Steel received: <b>5.2t S355 IPE 200</b> (Heat 6543A)</div>
+                <div style="font-size: 11px; color: #67748e;">Yesterday — supplier ArcelorMittal</div>
+              </div>
+            </div>
+            <div style="display: flex; gap: 12px; padding: 8px 0; border-bottom: 1px solid #f1f2f4;">
+              <div style="width: 32px; height: 32px; background: #fff3bf; border-radius: 8px; display: flex; align-items: center; justify-content: center;">⚠</div>
+              <div>
+                <div>Low stock alert: <b>L 50x50x5</b> below reorder point</div>
+                <div style="font-size: 11px; color: #67748e;">Yesterday</div>
+              </div>
+            </div>
+            <div style="display: flex; gap: 12px; padding: 8px 0;">
+              <div style="width: 32px; height: 32px; background: #ffd5d5; border-radius: 8px; display: flex; align-items: center; justify-content: center;">📋</div>
+              <div>
+                <div>New project: <b>Acoperis Depozit Cluj</b> (€48,500)</div>
+                <div style="font-size: 11px; color: #67748e;">2 days ago — customer SC Logistic Plus</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="card">
+        <h3 class="card-title">Today's Production Plan</h3>
+        <table>
+          <thead>
+            <tr><th>Work Order</th><th>Project</th><th>Operator</th><th>Stage</th><th>Status</th><th>Progress</th></tr>
+          </thead>
+          <tbody>
+            <tr><td><b>WO-2026-121</b></td><td>Hala Industriala BV</td><td>Marian P.</td><td>Cutting</td><td><span class="badge b-blue">In Progress</span></td><td><div class="progress"><div class="progress-fill" style="width:65%"></div></div></td></tr>
+            <tr><td><b>WO-2026-122</b></td><td>Hala Industriala BV</td><td>Florin I.</td><td>Welding</td><td><span class="badge b-blue">In Progress</span></td><td><div class="progress"><div class="progress-fill" style="width:30%"></div></div></td></tr>
+            <tr><td><b>WO-2026-123</b></td><td>Pasarela Pietonala</td><td>Andrei M.</td><td>Drilling</td><td><span class="badge b-yellow">Queued</span></td><td><div class="progress"><div class="progress-fill" style="width:0%"></div></div></td></tr>
+            <tr><td><b>WO-2026-124</b></td><td>Acoperis Depozit Cluj</td><td>Cristi T.</td><td>Painting</td><td><span class="badge b-green">Ready Ship</span></td><td><div class="progress"><div class="progress-fill" style="width:100%"></div></div></td></tr>
+            <tr><td><b>WO-2026-125</b></td><td>Reparatii Pod Vechi</td><td>Marian P.</td><td>QC</td><td><span class="badge b-yellow">Queued</span></td><td><div class="progress"><div class="progress-fill" style="width:0%"></div></div></td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- ============== CUSTOMERS / PROJECTS ============== -->
+    <div class="page" id="page-customers">
+      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;">
+        <h2 class="section-title">Customers & Projects</h2>
+        <button class="btn btn-primary" onclick="openModal('new-project')">+ New Project</button>
+      </div>
+      <div class="card">
+        <table>
+          <thead>
+            <tr><th>Customer</th><th>Project</th><th>Value</th><th>Tonnage</th><th>Deadline</th><th>Status</th><th></th></tr>
+          </thead>
+          <tbody id="projects-tbody"></tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- ============== INVENTORY ============== -->
+    <div class="page" id="page-inventory">
+      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;">
+        <h2 class="section-title">Steel Inventory</h2>
+        <div style="display: flex; gap: 8px;">
+          <button class="btn btn-light" onclick="toast('CSV import — Advance Steel BOM format')">⬆ Import BOM</button>
+          <button class="btn btn-primary" onclick="openModal('receive-steel')">+ Receive Stock</button>
+        </div>
+      </div>
+      <div class="card">
+        <table>
+          <thead>
+            <tr><th>Profile</th><th>Grade</th><th>Length</th><th>Heat #</th><th>Qty</th><th>Stock Level</th><th>Location</th></tr>
+          </thead>
+          <tbody id="inventory-tbody"></tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- ============== WORK ORDERS ============== -->
+    <div class="page" id="page-workorders">
+      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;">
+        <h2 class="section-title">Work Orders</h2>
+        <button class="btn btn-primary" onclick="openModal('new-wo')">+ New Work Order</button>
+      </div>
+      <div class="kanban">
+        <div class="kanban-col">
+          <h4>QUEUED <span>5</span></h4>
+          <div class="kanban-card"><div class="kc-title">WO-2026-126 — Cut beams</div><div style="font-size: 11px; color: #67748e;">Hala Industriala BV</div><div class="kc-meta"><span>👤 Unassigned</span><span>2.4t</span></div></div>
+          <div class="kanban-card"><div class="kc-title">WO-2026-127 — Drill plates</div><div style="font-size: 11px; color: #67748e;">Pasarela Pietonala</div><div class="kc-meta"><span>👤 Andrei M.</span><span>0.8t</span></div></div>
+          <div class="kanban-card urgent"><div class="kc-title">WO-2026-128 — Weld assembly</div><div style="font-size: 11px; color: #67748e;">Reparatii Pod Vechi</div><div class="kc-meta"><span>⏰ Tomorrow</span><span>1.5t</span></div></div>
+        </div>
+        <div class="kanban-col">
+          <h4>IN PROGRESS <span>3</span></h4>
+          <div class="kanban-card"><div class="kc-title">WO-2026-121 — Cut IPE 200</div><div style="font-size: 11px; color: #67748e;">Hala Industriala BV</div><div class="kc-meta"><span>👤 Marian P. (65%)</span><span>3.1t</span></div></div>
+          <div class="kanban-card"><div class="kc-title">WO-2026-122 — Weld trusses</div><div style="font-size: 11px; color: #67748e;">Hala Industriala BV</div><div class="kc-meta"><span>👤 Florin I. (30%)</span><span>2.2t</span></div></div>
+          <div class="kanban-card"><div class="kc-title">WO-2026-123 — Drill plates</div><div style="font-size: 11px; color: #67748e;">Pasarela Pietonala</div><div class="kc-meta"><span>👤 Andrei M.</span><span>0.6t</span></div></div>
+        </div>
+        <div class="kanban-col">
+          <h4>QC / REVIEW <span>2</span></h4>
+          <div class="kanban-card review"><div class="kc-title">WO-2026-119 — Painting</div><div style="font-size: 11px; color: #67748e;">Acoperis Depozit Cluj</div><div class="kc-meta"><span>👤 Cristi T.</span><span>5.0t</span></div></div>
+          <div class="kanban-card review"><div class="kc-title">WO-2026-125 — Final QC</div><div style="font-size: 11px; color: #67748e;">Reparatii Pod Vechi</div><div class="kc-meta"><span>👤 Daniel S.</span><span>1.8t</span></div></div>
+        </div>
+        <div class="kanban-col">
+          <h4>DONE <span>4</span></h4>
+          <div class="kanban-card done"><div class="kc-title">WO-2026-118 — Assembly</div><div style="font-size: 11px; color: #67748e;">Hala Industriala BV</div><div class="kc-meta"><span>✓ Marian P.</span><span>4.2t</span></div></div>
+          <div class="kanban-card done"><div class="kc-title">WO-2026-117 — Cut sections</div><div style="font-size: 11px; color: #67748e;">Hala Industriala BV</div><div class="kc-meta"><span>✓ Florin I.</span><span>3.6t</span></div></div>
+          <div class="kanban-card done"><div class="kc-title">WO-2026-115 — Surface prep</div><div style="font-size: 11px; color: #67748e;">Acoperis Depozit Cluj</div><div class="kc-meta"><span>✓ Cristi T.</span><span>5.0t</span></div></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ============== SETTINGS ============== -->
+    <div class="page" id="page-settings">
+      <h2 class="section-title">Settings</h2>
+      <div class="grid grid-2">
+        <div class="card">
+          <h3 class="card-title">Company</h3>
+          <p style="font-size: 13px; color: #67748e;">
+            <b>Metal Xpert SRL</b><br>
+            CIF: RO12345678<br>
+            Zalău, Sălaj, Romania<br>
+            14 employees · 10 production · 4 office
+          </p>
+        </div>
+        <div class="card">
+          <h3 class="card-title">Integrations</h3>
+          <div style="display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid #f1f2f4;">
+            <span>SAGA accounting (XML export)</span><span class="badge b-grey">v2 - planned</span>
+          </div>
+          <div style="display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid #f1f2f4;">
+            <span>Advance Steel BOM CSV</span><span class="badge b-green">Active</span>
+          </div>
+          <div style="display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid #f1f2f4;">
+            <span>e-Factura (ANAF)</span><span class="badge b-grey">Out of scope</span>
+          </div>
+          <div style="display: flex; justify-content: space-between; padding: 8px 0;">
+            <span>SDS2 detailing import</span><span class="badge b-grey">v2 - backlog</span>
+          </div>
+        </div>
+        <div class="card">
+          <h3 class="card-title">Users</h3>
+          <table>
+            <tr><td>Vlad Goia</td><td><span class="badge b-blue">Admin</span></td></tr>
+            <tr><td>Daniel Sims</td><td><span class="badge b-blue">Admin / Reviewer</span></td></tr>
+            <tr><td>Marian Pop</td><td><span class="badge b-grey">Operator</span></td></tr>
+            <tr><td>Florin Ilies</td><td><span class="badge b-grey">Operator</span></td></tr>
+            <tr><td>Andrei Marian</td><td><span class="badge b-grey">Operator</span></td></tr>
+            <tr><td>Cristi Toma</td><td><span class="badge b-grey">Operator</span></td></tr>
+            <tr><td>Office staff (4)</td><td><span class="badge b-yellow">Office</span></td></tr>
+          </table>
+        </div>
+        <div class="card">
+          <h3 class="card-title">v1 Modules</h3>
+          <ol style="font-size: 13px; padding-left: 20px; line-height: 1.9;">
+            <li>Auth & Users</li>
+            <li>Customers & Projects</li>
+            <li>Steel Inventory (heat # tracking)</li>
+            <li>Work Orders</li>
+            <li>Shop-floor tablet (PIN login)</li>
+            <li>Dashboards</li>
+          </ol>
+        </div>
+      </div>
+    </div>
+  </main>
+</div>
+
+<!-- ============== SHOP FLOOR TABLET ============== -->
+<div id="shop-tablet">
+  <div class="tablet-header">
+    <h2 id="tablet-title">Shop Floor — Sign In</h2>
+    <button class="task-btn pause" onclick="closeTablet()">← Exit Tablet</button>
+  </div>
+  <div class="pin-pad" id="pin-pad">
+    <p style="opacity: 0.7;">Enter your 4-digit PIN</p>
+    <div class="pin-display" id="pin-display">— — — —</div>
+    <div class="pin-grid">
+      <button class="pin-btn" onclick="pinPress('1')">1</button>
+      <button class="pin-btn" onclick="pinPress('2')">2</button>
+      <button class="pin-btn" onclick="pinPress('3')">3</button>
+      <button class="pin-btn" onclick="pinPress('4')">4</button>
+      <button class="pin-btn" onclick="pinPress('5')">5</button>
+      <button class="pin-btn" onclick="pinPress('6')">6</button>
+      <button class="pin-btn" onclick="pinPress('7')">7</button>
+      <button class="pin-btn" onclick="pinPress('8')">8</button>
+      <button class="pin-btn" onclick="pinPress('9')">9</button>
+      <button class="pin-btn" onclick="pinClear()">⌫</button>
+      <button class="pin-btn" onclick="pinPress('0')">0</button>
+      <button class="pin-btn" onclick="pinSubmit()">✓</button>
+    </div>
+    <p style="margin-top: 24px; font-size: 12px; opacity: 0.5;">Try PIN: <b>1234</b> (Marian)</p>
+  </div>
+  <div class="tablet-tasks" id="tablet-tasks">
+    <p style="margin-bottom: 16px; opacity: 0.7;" id="tablet-greeting">Welcome — here are your tasks for today:</p>
+    <div class="task-tile">
+      <div class="info">
+        <h3>WO-2026-121 — Cut IPE 200</h3>
+        <p>Hala Industriala BV · 12 pieces · 6.0m each</p>
+      </div>
+      <div class="task-actions">
+        <button class="task-btn pause">Pause</button>
+        <button class="task-btn complete" onclick="toast('WO-2026-121 marked complete!')">Complete</button>
+      </div>
+    </div>
+    <div class="task-tile">
+      <div class="info">
+        <h3>WO-2026-118 — Final assembly check</h3>
+        <p>Hala Industriala BV · QC checklist (8 items)</p>
+      </div>
+      <div class="task-actions">
+        <button class="task-btn start" onclick="toast('Started WO-2026-118')">Start</button>
+      </div>
+    </div>
+    <div class="task-tile">
+      <div class="info">
+        <h3>WO-2026-125 — Final QC handover</h3>
+        <p>Reparatii Pod Vechi · prepare for shipping</p>
+      </div>
+      <div class="task-actions">
+        <button class="task-btn start" onclick="toast('Started WO-2026-125')">Start</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ============== MODAL ============== -->
+<div class="modal-bg" id="modal-bg" onclick="if(event.target.id==='modal-bg') closeModal()">
+  <div class="modal" id="modal-content"></div>
+</div>
+
+<!-- ============== TOAST ============== -->
+<div class="toast" id="toast"></div>
+
+<script>
+// ===== Mock Data =====
+const projects = [
+  { customer: 'SC Constructii Ardelean', project: 'Hala Industriala BV', value: '€ 124,500', tonnage: '38.4 t', deadline: '2026-06-12', status: 'in-progress' },
+  { customer: 'SC Logistic Plus', project: 'Acoperis Depozit Cluj', value: '€ 48,500', tonnage: '12.0 t', deadline: '2026-05-22', status: 'qc' },
+  { customer: 'Primaria Sibiu', project: 'Pasarela Pietonala', value: '€ 86,200', tonnage: '22.5 t', deadline: '2026-07-30', status: 'in-progress' },
+  { customer: 'CFR Reparatii', project: 'Reparatii Pod Vechi', value: '€ 31,800', tonnage: '8.4 t', deadline: '2026-05-15', status: 'urgent' },
+  { customer: 'SC Agro Vest', project: 'Siloz Cereale 2', value: '€ 67,000', tonnage: '18.2 t', deadline: '2026-08-10', status: 'planning' },
+  { customer: 'SC Imobiliare Plus', project: 'Mezanin Birou', value: '€ 19,400', tonnage: '4.8 t', deadline: '2026-06-01', status: 'completed' },
+];
+const statusBadges = {
+  'in-progress': '<span class="badge b-blue">In Progress</span>',
+  'qc': '<span class="badge b-yellow">QC</span>',
+  'urgent': '<span class="badge b-red">Urgent</span>',
+  'planning': '<span class="badge b-grey">Planning</span>',
+  'completed': '<span class="badge b-green">Completed</span>',
+};
+
+const inventory = [
+  { profile: 'IPE 200', grade: 'S355', length: '12.0 m', heat: '6543A-2025', qty: 14, level: 80, loc: 'Rack A-1' },
+  { profile: 'IPE 270', grade: 'S355', length: '12.0 m', heat: '6541C-2025', qty: 8, level: 60, loc: 'Rack A-2' },
+  { profile: 'HEA 200', grade: 'S275', length: '12.0 m', heat: '7102B-2025', qty: 6, level: 45, loc: 'Rack B-1' },
+  { profile: 'HEB 240', grade: 'S355', length: '12.0 m', heat: '6592A-2026', qty: 4, level: 35, loc: 'Rack B-2' },
+  { profile: 'L 50x50x5', grade: 'S235', length: '6.0 m', heat: '4421D-2025', qty: 3, level: 15, loc: 'Rack C-1', low: true },
+  { profile: 'L 80x80x8', grade: 'S275', length: '6.0 m', heat: '4488A-2026', qty: 9, level: 70, loc: 'Rack C-1' },
+  { profile: 'U 100', grade: 'S235', length: '6.0 m', heat: '5102C-2025', qty: 12, level: 90, loc: 'Rack C-2' },
+  { profile: 'Plate 10mm', grade: 'S355', length: '2.0×6.0 m', heat: '8821B-2026', qty: 7, level: 55, loc: 'Floor D' },
+  { profile: 'Plate 15mm', grade: 'S355', length: '2.0×6.0 m', heat: '8835A-2026', qty: 5, level: 40, loc: 'Floor D' },
+  { profile: 'RHS 100x100x4', grade: 'S275', length: '6.0 m', heat: '6601A-2025', qty: 11, level: 75, loc: 'Rack E' },
+];
+
+const operators = {
+  '1234': { name: 'Marian Pop', role: 'Welder' },
+  '2345': { name: 'Florin Ilies', role: 'Cutter' },
+  '3456': { name: 'Andrei Marian', role: 'Driller' },
+  '4567': { name: 'Cristi Toma', role: 'Painter' },
+};
+
+// ===== Renderers =====
+function renderProjects() {
+  document.getElementById('projects-tbody').innerHTML = projects.map(p => `
+    <tr>
+      <td><b>${p.customer}</b></td>
+      <td>${p.project}</td>
+      <td>${p.value}</td>
+      <td>${p.tonnage}</td>
+      <td>${p.deadline}</td>
+      <td>${statusBadges[p.status]}</td>
+      <td><button class="btn btn-light btn-sm" onclick="toast('Opening ${p.project}...')">View</button></td>
+    </tr>
+  `).join('');
+}
+function renderInventory() {
+  document.getElementById('inventory-tbody').innerHTML = inventory.map(i => `
+    <tr>
+      <td><b>${i.profile}</b></td>
+      <td>${i.grade}</td>
+      <td>${i.length}</td>
+      <td><span class="heat-tag">${i.heat}</span></td>
+      <td>${i.qty}</td>
+      <td><div class="progress"><div class="progress-fill ${i.low ? 'low' : ''}" style="width:${i.level}%"></div></div></td>
+      <td>${i.loc}</td>
+    </tr>
+  `).join('');
+}
+
+// ===== Navigation =====
+function doLogin() {
+  document.getElementById('login').style.display = 'none';
+  document.getElementById('app').classList.add('active');
+  renderProjects();
+  renderInventory();
+}
+function logout() {
+  document.getElementById('app').classList.remove('active');
+  document.getElementById('login').style.display = 'flex';
+}
+function goto(page) {
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  document.getElementById('page-' + page).classList.add('active');
+  document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+  event.target.closest('.nav-item').classList.add('active');
+  const titles = { dashboard:'Dashboard', customers:'Customers & Projects', inventory:'Steel Inventory', workorders:'Work Orders', settings:'Settings' };
+  document.getElementById('page-title').textContent = titles[page];
+  window.scrollTo(0,0);
+}
+
+// ===== Tablet =====
+let pin = '';
+function openTablet() {
+  document.getElementById('shop-tablet').classList.add('active');
+  pinClear();
+  document.getElementById('pin-pad').style.display = 'block';
+  document.getElementById('tablet-tasks').classList.remove('active');
+  document.getElementById('tablet-title').textContent = 'Shop Floor — Sign In';
+}
+function closeTablet() {
+  document.getElementById('shop-tablet').classList.remove('active');
+}
+function pinPress(d) {
+  if (pin.length < 4) pin += d;
+  updatePinDisplay();
+  if (pin.length === 4) setTimeout(pinSubmit, 200);
+}
+function pinClear() { pin = ''; updatePinDisplay(); }
+function updatePinDisplay() {
+  const padded = pin.padEnd(4, '—');
+  document.getElementById('pin-display').textContent = padded.split('').join(' ');
+}
+function pinSubmit() {
+  if (operators[pin]) {
+    const op = operators[pin];
+    document.getElementById('pin-pad').style.display = 'none';
+    document.getElementById('tablet-tasks').classList.add('active');
+    document.getElementById('tablet-title').textContent = `${op.name} (${op.role})`;
+    document.getElementById('tablet-greeting').textContent = `Bună, ${op.name.split(' ')[0]} — here are your tasks for today:`;
+  } else {
+    toast('Invalid PIN — try 1234');
+    pinClear();
+  }
+}
+
+// ===== Modal =====
+function openModal(type) {
+  let html = '';
+  if (type === 'new-project') {
+    html = `
+      <h3>New Project</h3>
+      <p>Create a new steel fabrication project.</p>
+      <label>Customer</label><select><option>SC Constructii Ardelean</option><option>SC Logistic Plus</option><option>+ New customer...</option></select>
+      <label>Project name</label><input placeholder="e.g. Hala Industriala BV">
+      <label>Estimated value (EUR)</label><input placeholder="0">
+      <label>Estimated tonnage (t)</label><input placeholder="0.0">
+      <label>Deadline</label><input type="date">
+      <div class="modal-actions">
+        <button class="btn btn-light" onclick="closeModal()">Cancel</button>
+        <button class="btn btn-primary" onclick="closeModal(); toast('Project created (demo)')">Create</button>
+      </div>`;
+  } else if (type === 'receive-steel') {
+    html = `
+      <h3>Receive Steel</h3>
+      <p>Log incoming material. Heat # is required for traceability.</p>
+      <label>Profile</label><input placeholder="e.g. IPE 200">
+      <label>Grade</label><select><option>S235</option><option>S275</option><option selected>S355</option></select>
+      <label>Heat number</label><input placeholder="e.g. 6543A-2026">
+      <label>Quantity (pcs)</label><input placeholder="0">
+      <label>Length (m)</label><input placeholder="12.0">
+      <label>Supplier</label><input placeholder="ArcelorMittal">
+      <div class="modal-actions">
+        <button class="btn btn-light" onclick="closeModal()">Cancel</button>
+        <button class="btn btn-primary" onclick="closeModal(); toast('Stock received (demo)')">Save</button>
+      </div>`;
+  } else if (type === 'new-wo') {
+    html = `
+      <h3>New Work Order</h3>
+      <p>Create a new work order linked to a project.</p>
+      <label>Project</label><select><option>Hala Industriala BV</option><option>Pasarela Pietonala</option><option>Reparatii Pod Vechi</option></select>
+      <label>Operation</label><select><option>Cutting</option><option>Drilling</option><option>Welding</option><option>Painting</option><option>QC</option></select>
+      <label>Description</label><textarea rows="3" placeholder="What needs to be done"></textarea>
+      <label>Assign to</label><select><option>Marian Pop</option><option>Florin Ilies</option><option>Andrei Marian</option><option>Cristi Toma</option></select>
+      <label>Due date</label><input type="date">
+      <div class="modal-actions">
+        <button class="btn btn-light" onclick="closeModal()">Cancel</button>
+        <button class="btn btn-primary" onclick="closeModal(); toast('WO-2026-129 created (demo)')">Create</button>
+      </div>`;
+  }
+  document.getElementById('modal-content').innerHTML = html;
+  document.getElementById('modal-bg').classList.add('active');
+}
+function closeModal() { document.getElementById('modal-bg').classList.remove('active'); }
+
+// ===== Toast =====
+let toastTimer;
+function toast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => t.classList.remove('show'), 2500);
+}
+</script>
+</body>
+</html>
